@@ -417,6 +417,8 @@ $(window).on('load', function() {
         <br/> \
         <a href='https://kensingtonremembers.org/'>  \
           <small>Kensington Remembers</small>  \
+        <a href='https://kensingtonremembers.org/contact/'>  \
+          <small>Contact Us</small>  \
         </a> \
       </div> \
     ");
