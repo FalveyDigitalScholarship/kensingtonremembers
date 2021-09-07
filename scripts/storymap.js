@@ -11,7 +11,7 @@ $(window).on('load', function() {
   });
 
   // First, try reading data from the Google Sheet
-  if (typeof googleDocURL !== 'undefined' && googleDocURL) {
+  /*if (typeof googleDocURL !== 'undefined' && googleDocURL) {
     Tabletop.init({
       key: googleDocURL,
       callback: function(data, tt) {
@@ -32,7 +32,49 @@ $(window).on('load', function() {
         )
       }).fail(function(e) { alert('Could not read Chapters.csv') });
     }).fail(function(e) { alert('Could not read Options.csv') })
-  }
+  }*/
+
+  // First, try reading Options.csv
+  $.get('csv/Options.csv', function(options) {
+
+    $.get('csv/Chapters.csv', function(chapters) {
+      initMap(
+        $.csv.toObjects(options),
+        $.csv.toObjects(chapters)
+      )
+    }).fail(function(e) { alert('Found Options.csv, but could not read Chapters.csv') });
+
+  // If not available, try from the Google Sheet
+  }).fail(function(e) {
+
+    var parse = function(res) {
+      return Papa.parse(Papa.unparse(res[0].values), {header: true} ).data;
+    }
+
+    // First, try reading data from the Google Sheet
+    if (typeof googleDocURL !== 'undefined' && googleDocURL) {
+
+      if (typeof googleApiKey !== 'undefined' && googleApiKey) {
+
+        var apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/'
+        var spreadsheetId = googleDocURL.split('/d/')[1].split('/')[0];
+
+        $.when(
+          $.getJSON(apiUrl + spreadsheetId + '/values/Options?key=' + googleApiKey),
+          $.getJSON(apiUrl + spreadsheetId + '/values/Chapters?key=' + googleApiKey),
+        ).then(function(options, chapters) {
+          initMap(parse(options), parse(chapters))
+        })
+
+      } else {
+        alert('You load data from a Google Sheet, you need to add a free Google API key')
+      }
+
+    } else {
+      alert('You need to specify a valid Google Sheet (googleDocURL)')
+    }
+
+  })
 
 
   /**
