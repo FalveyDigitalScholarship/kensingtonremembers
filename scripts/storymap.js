@@ -5,10 +5,10 @@ $(window).on('load', function() {
   const CHAPTER_ZOOM = 15;
 
   // This watches for the scrollable container
-  var scrollPosition = 0;
+  /*var scrollPosition = 0;
   $('div#contents').scroll(function() {
     scrollPosition = $(this).scrollTop();
-  });
+  });*/
 
   // First, try reading data from the Google Sheet
   /*if (typeof googleDocURL !== 'undefined' && googleDocURL) {
