@@ -5,34 +5,10 @@ $(window).on('load', function() {
   const CHAPTER_ZOOM = 15;
 
   // This watches for the scrollable container
-  /*var scrollPosition = 0;
+  var scrollPosition = 0;
   $('div#contents').scroll(function() {
     scrollPosition = $(this).scrollTop();
-  });*/
-
-  // First, try reading data from the Google Sheet
-  /*if (typeof googleDocURL !== 'undefined' && googleDocURL) {
-    Tabletop.init({
-      key: googleDocURL,
-      callback: function(data, tt) {
-        initMap(
-          data.Options.elements,
-          data.Chapters.elements
-        )
-      }
-    })
-  }
-  // Else, try csv/Options.csv and csv/Chapters.csv
-  else {
-    $.get('csv/Options.csv', function(options) {
-      $.get('csv/Chapters.csv', function(chapters) {
-        initMap(
-          $.csv.toObjects(options),
-          $.csv.toObjects(chapters),
-        )
-      }).fail(function(e) { alert('Could not read Chapters.csv') });
-    }).fail(function(e) { alert('Could not read Options.csv') })
-  }*/
+  });
 
   // First, try reading Options.csv
   $.get('csv/Options.csv', function(options) {
@@ -75,6 +51,7 @@ $(window).on('load', function() {
     }
 
   })
+
 
 
   /**
@@ -124,8 +101,8 @@ $(window).on('load', function() {
     var chapterContainerMargin = 70;
 
     document.title = getSetting('_mapTitle');
-    $('#header').append('<h1>' + getSetting('_mapTitle') + '</h1>');
-    $('#header').append('<h2>' + getSetting('_mapSubtitle') + '</h2>');
+    $('#header').append('<h1>' + (getSetting('_mapTitle') || '') + '</h1>');
+    $('#header').append('<h2>' + (getSetting('_mapSubtitle') || '') + '</h2>');
 
 
     // Add logo
@@ -460,10 +437,6 @@ $(window).on('load', function() {
         <a href='https://kensingtonremembers.org/'>  \
           <small>Kensington Remembers</small>  \
         </a> \
-        <br/> \
-        <a href='https://kensingtonremembers.org/contact/'>  \
-          <small>Contact Us</small>  \
-        </a> \
       </div> \
     ");
 
@@ -512,6 +485,20 @@ $(window).on('load', function() {
 
     $('div#container0').addClass("in-focus");
     $('div#contents').animate({scrollTop: '1px'});
+
+
+        // Add Google Analytics if the ID exists
+        var ga = getSetting('_googleAnalytics');
+        if ( ga && ga.length >= 10 ) {
+          var gaScript = document.createElement('script');
+          gaScript.setAttribute('src','https://www.googletagmanager.com/gtag/js?id=' + ga);
+          document.head.appendChild(gaScript);
+
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', ga);
+        }
   }
 
 
