@@ -1,4 +1,4 @@
-$(window).on('load', function() {
+$(window).on('load', function () {
   var documentSettings = {};
 
   // Some constants, such as default settings
@@ -9,7 +9,6 @@ $(window).on('load', function() {
   $('div#contents').scroll(function() {
     scrollPosition = $(this).scrollTop();
   });
-
   // First, try reading Options.csv
   $.get('csv/Options.csv', function(options) {
 
@@ -21,9 +20,9 @@ $(window).on('load', function() {
     }).fail(function(e) { alert('Found Options.csv, but could not read Chapters.csv') });
 
   // If not available, try from the Google Sheet
-  }).fail(function(e) {
+   }).fail(function(e) {
 
-    var parse = function(res) {
+     var parse = function(res) {
       return Papa.parse(Papa.unparse(res[0].values), {header: true} ).data;
     }
 
@@ -88,12 +87,12 @@ $(window).on('load', function() {
   /**
    * Loads the basemap and adds it to the map
    */
-  function addBaseMap() {
-    var basemap = trySetting('_tileProvider', 'Stamen.TonerLite');
-    L.tileLayer.provider(basemap, {
-      maxZoom: 18
-    }).addTo(map);
-  }
+   function addBaseMap() {
+     var basemap = trySetting('_tileProvider', 'Stamen.TonerLite');
+     L.tileLayer.provider(basemap, {
+       maxZoom: 18
+     }).addTo(map);
+   }
 
   function initMap(options, chapters) {
     createDocumentSettings(options);
@@ -103,7 +102,6 @@ $(window).on('load', function() {
     document.title = getSetting('_mapTitle');
     $('#header').append('<h1>' + (getSetting('_mapTitle') || '') + '</h1>');
     $('#header').append('<h2>' + (getSetting('_mapSubtitle') || '') + '</h2>');
-
 
     // Add logo
     if (getSetting('_mapLogo')) {
@@ -127,7 +125,7 @@ $(window).on('load', function() {
 
     var markers = [];
 
-    var markActiveColor = function(k) {
+     var markActiveColor = function(k) {
       /* Removes marker-active class from all markers */
       for (var i = 0; i < markers.length; i++) {
         if (markers[i] && markers[i]._icon) {
@@ -151,7 +149,7 @@ $(window).on('load', function() {
     for (i in chapters) {
       var c = chapters[i];
 
-      if ( !isNaN(parseFloat(c['Latitude'])) && !isNaN(parseFloat(c['Longitude']))) {
+        if ( !isNaN(parseFloat(c['Latitude'])) && !isNaN(parseFloat(c['Longitude']))) {
         var lat = parseFloat(c['Latitude']);
         var lon = parseFloat(c['Longitude']);
 
@@ -185,20 +183,20 @@ $(window).on('load', function() {
       var mediaContainer = null;
 
       // Add media source
-      var mediasource = $('<a>', {
-        text: c['Media Credit'],
-        href: c['Media Credit Link'],
-        target: "_blank",
-        class: 'source'
-      });
-
-      var mediasourcemodal = $('<a>', {
-        text: c['Media Credit'],
-        href: c['Media Credit Link'],
-        target: "_blank",
-        class: 'modal_caption'
-      });
-
+      var source = '';
+      if (c['Media Credit Link']) {
+        source = $('<a>', {
+          text: c['Media Credit'],
+          href: c['Media Credit Link'],
+          target: "_blank",
+          class: 'source'
+        });
+      } else {
+        source = $('<span>', {
+          text: c['Media Credit'],
+          class: 'source'
+        });
+      }
 
           // YouTube
       if (c['Media Link'] && c['Media Link'].indexOf('youtube.com/') > -1) {
@@ -211,9 +209,9 @@ $(window).on('load', function() {
           allowfullscreen: 'allowfullscreen',
         });
 
-        mediaContainer = $('<div></div', {
+        mediaContainer = $('<div></div>', {
           class: 'img-container'
-        }).append(media).after(mediasource);
+        }).append(media).after(source);
       }
 
       // If not YouTube: either audio or image
@@ -221,91 +219,49 @@ $(window).on('load', function() {
         'jpg': 'img',
         'jpeg': 'img',
         'png': 'img',
+        'tiff': 'img',
+        'gif': 'img',
         'mp3': 'audio',
         'mp4': 'audio',
         'ogg': 'audio',
         'wav': 'audio',
       }
 
-      var mediaExt = c['Media Link'].split('.').pop().toLowerCase();
+      var mediaExt = c['Media Link'] ? c['Media Link'].split('.').pop().toLowerCase() : '';
       var mediaType = mediaTypes[mediaExt];
 
       if (mediaType) {
        media = $('<' + mediaType + '>', {
          src: c['Media Link'],
-         class: 'myImg',
-         alt: c['Media Credit'],
-         controls: mediaType == 'audio' ? 'controls' : '',
+          controls: mediaType === 'audio' ? 'controls' : '',
+          alt: c['Chapter']
        });
+
+        var enableLightbox = getSetting('_enableLightbox') === 'yes' ? true : false;
+        if (enableLightbox && mediaType === 'img') {
+          var lightboxWrapper = $('<a></a>', {
+            'data-lightbox': c['Media Link'],
+            'href': c['Media Link'],
+            'data-title': c['Chapter'],
+            'data-alt': c['Chapter'],
+          });
+          media = lightboxWrapper.append(media);
+        }
 
        mediaContainer = $('<div></div', {
          class: mediaType + '-container'
-       }).append(media).after(mediasource);
-
+       }).append(media).after(source);
     }
 
       container
         .append('<p class="chapter-header">' + c['Chapter'] + '</p>')
         .append(media ? mediaContainer : '')
-        .append(media ? mediasource : '')
+        .append(media ? source : '')
         .append('<p class="description">' + c['Description'] + '</p>');
 
       $('#contents').append(container);
 
-      var modalcontainer = $('<div></div>', {
-          id: 'modalcontainer' + i,
-        });
-
-        span = $('<span class="close">'+ c['Span Element'] + '</span>');
-
-        modal = $('<' + mediaType + '>', {
-              src: c['Media Link'],
-              id: 'img01',
-              class: 'modal-content',
-              controls: mediaType == 'audio' ? 'controls' : '',
-              });
-
-        imgContainer = $('<div id="myModal" class="modal"></div',{
-            class: mediaType
-          }).append(span)
-          .append(modal)
-          .append(mediasourcemodal)
-          ;
-        $('#contents').append(imgContainer);
-
-        modalcontainer
-              .append(media ? imgContainer : '')
-            $('#contents').append(modalcontainer);
-
-        var modal = document.getElementById('myModal');
-        var span = document.getElementsByClassName("close")[0];
-
-        // Get the image and insert it inside the modal - use its "alt" text as a caption
-
-        var img = $('.myImg');
-        var modalImg = $("#img01");
-        var captionText = document.getElementById("caption");
-        $('.myImg').click(function(){
-            if ($(window).width() >=768 ) {
-                modal.style.display = "block";
-                var newSrc = this.src;
-                var newCaption = $( this ).parent().next().text();
-                var newCaptionLink = $( this ).parent().next().attr('href');
-                $("#title").css('visibility','hidden');
-                modalImg.attr('src', newSrc);
-                modalImg.next().text(newCaption);
-                modalImg.next().attr('href',newCaptionLink);
-            }
-        });
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-          modal.style.display = "none";
-          $("#title").css('visibility','visible');
-        };
-
-
-
-      }
+       }
 
     changeAttribution();
 
@@ -339,6 +295,10 @@ $(window).on('load', function() {
           && currentPosition < (pixelsAbove[i+1] - 2 * chapterContainerMargin)
           && currentlyInFocus != i
         ) {
+
+         // Update URL hash
+        location.hash = i + 2;
+
           // Remove styling for the old in-focus chapter and
           // add it to the new active chapter
           $('.chapter-container').removeClass("in-focus").addClass("out-focus");
@@ -361,25 +321,26 @@ $(window).on('load', function() {
 
           // Add chapter's overlay tiles if specified in options
           if (c['Overlay']) {
-            var opacity = (c['Overlay Transparency'] !== '') ? parseFloat(c['Overlay Transparency']) : 1;
+
+ var opacity = (c['Overlay Transparency'] !== '') ? parseFloat(c['Overlay Transparency']) : 1;
             var url = c['Overlay'];
 
-            if (url.split('.').pop() == 'geojson') {
+            if (url.split('.').pop() === 'geojson') {
               $.getJSON(url, function(geojson) {
                 overlay = L.geoJson(geojson, {
                   style: function(feature) {
                     return {
-                      fillColor: feature.properties.COLOR,
-                      weight: 1,
-                      opacity: 0.5,
-                      color: feature.properties.COLOR,
-                      fillOpacity: 0.5,
+                      fillColor: feature.properties.fillColor || '#ffffff',
+                      weight: feature.properties.weight || 1,
+                      opacity: feature.properties.opacity || opacity,
+                      color: feature.properties.color || '#cccccc',
+                      fillOpacity: feature.properties.fillOpacity || 0.5,
                     }
                   }
                 }).addTo(map);
               });
             } else {
-              overlay = L.tileLayer(c['Overlay'], {opacity: opacity}).addTo(map);
+              overlay = L.tileLayer(c['Overlay'], { opacity: opacity }).addTo(map);
             }
 
           }
@@ -403,11 +364,11 @@ $(window).on('load', function() {
               geoJsonOverlay = L.geoJson(geojson, {
                 style: function(feature) {
                   return {
-                    fillColor: feature.properties.COLOR || props.fillColor || 'white',
-                    weight: props.weight || 1,
-                    opacity: props.opacity || 0.5,
-                    color: feature.properties.COLOR || props.color || 'silver',
-                    fillOpacity: props.fillOpacity || 0.5,
+                    fillColor: feature.properties.fillColor || props.fillColor || '#ffffff',
+                    weight: feature.properties.weight || props.weight || 1,
+                    opacity: feature.properties.opacity || props.opacity || 0.5,
+                    color: feature.properties.color || props.color || '#cccccc',
+                    fillOpacity: feature.properties.fillOpacity || props.fillOpacity || 0.5,
                   }
                 }
               }).addTo(map);
@@ -436,6 +397,10 @@ $(window).on('load', function() {
         <br/> \
         <a href='https://kensingtonremembers.org/'>  \
           <small>Kensington Remembers</small>  \
+        </a> \
+        <br/> \
+        <a href='https://kensingtonremembers.org/contact/'>  \
+          <small>Contact Us</small>  \
         </a> \
       </div> \
     ");
@@ -486,11 +451,19 @@ $(window).on('load', function() {
     $('div#container0').addClass("in-focus");
     $('div#contents').animate({scrollTop: '1px'});
 
+    // On first load, check hash and if it contains an number, scroll down
+      if (parseInt(location.hash.substr(1))) {
+      var containerId = parseInt(location.hash.substr(1)) - 2;
+      $('#contents').animate({
+        scrollTop: $('#container' + containerId).offset().top
+      }, 2000);
+    }
 
-        // Add Google Analytics if the ID exists
-        var ga = getSetting('_googleAnalytics');
+    // Add Google Analytics if the ID exists
+    var ga = getSetting('_googleAnalytics');
         if ( ga && ga.length >= 10 ) {
-          var gaScript = document.createElement('script');
+      var gaScript = document.createElement('script');
+           var gaScript = document.createElement('script');
           gaScript.setAttribute('src','https://www.googletagmanager.com/gtag/js?id=' + ga);
           document.head.appendChild(gaScript);
 
@@ -499,6 +472,8 @@ $(window).on('load', function() {
           gtag('js', new Date());
           gtag('config', ga);
         }
+
+
   }
 
 
@@ -527,15 +502,15 @@ $(window).on('load', function() {
     }
 
     if (getSetting('projectWebsite')) credit += ' Project website: ' + getSetting('projectWebsite') + ' | ';
-    if (getSetting('_githubRepo')) credit += ' GitHub Repo: ' + getSetting('_githubRepo') + ' | ';
-    //if (getSetting('_webDeveloper')) credit += 'Digital Project Support by: ' + getSetting('_webDeveloper') + ' | ';
-    if ( web && weburl) {
-      if (weburl.indexOf('@') > 0) { url = 'mailto:' + weburl; }
-      credit += ' Digital Project Support by: <a href="' + weburl + '">' + web + ' | ' + '</a>';
-    };
-    if (getSetting('_codeCredit')) credit += 'Original Code by ' + getSetting('_codeCredit');
-    credit += ' with ';
-    $('.leaflet-control-attribution')[0].innerHTML = credit + attributionHTML;
-  }
+        if (getSetting('_githubRepo')) credit += ' GitHub Repo: ' + getSetting('_githubRepo') + ' | ';
+        //if (getSetting('_webDeveloper')) credit += 'Digital Project Support by: ' + getSetting('_webDeveloper') + ' | ';
+        if ( web && weburl) {
+          if (weburl.indexOf('@') > 0) { url = 'mailto:' + weburl; }
+          credit += ' Digital Project Support by: <a href="' + weburl + '">' + web + ' | ' + '</a>';
+        };
+        if (getSetting('_codeCredit')) credit += 'Original Code by ' + getSetting('_codeCredit');
+        credit += ' with ';
+        $('.leaflet-control-attribution')[0].innerHTML = credit + attributionHTML;
+      }
 
-});
+    });

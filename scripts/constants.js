@@ -5,12 +5,11 @@ var constants = {
   _mapLogo: 'Storymap Logo',
   // Credits
 	_authorName: 'Author Name',
-  _webDeveloper: 'Web Development Assistant',
-  _projectWebsite: 'Project website',
 	_authorURL: 'Author Email or Website',
-  _webDeveloperURL: 'Web Development Assistant Email',
   _codeCredit: 'Code Credit',
+  _webDeveloperURL: 'Web Development Assistant',
 	_githubRepo: 'GitHub Repo',
+  _projectWebsite: 'Project website',
 	// Map Settings
 	_tileProvider: 'Basemap Tiles',
 	_zoomControls: 'Zoom Controls',
@@ -22,4 +21,5 @@ var constants = {
   _narrativeActive: 'Active Chapter Background Color',
   _narrativeLink: 'Narrative Link Color',
   _googleAnalytics: 'Google Analytics Tracking ID',
+  _enableLightbox: 'Enable Lightbox for Images'
 };
